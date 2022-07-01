@@ -1,31 +1,27 @@
 import { useState, useRef } from "react";
-import { loginFields } from "../constants/formFields";
+import { forgotPasswordFields } from "../constants/formFields";
 import FormAction from "./FormAction";
 import FormExtra from "./FormExtra";
 import Input from "./Input";
 import { useAuth } from "../contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
 
-const fields = loginFields;
+const fields = forgotPasswordFields;
 let fieldsState = {};
 fields.forEach((field) => (fieldsState[field.id] = ""));
 
-export default function Login() {
+export default function ForgotPassword() {
   const [loginState, setLoginState] = useState(fieldsState);
   const [signupState, setSignupState] = useState(fieldsState);
   const emailRef = useRef();
-  const passwordRef = useRef();
+  const [message, setMessage] = useState("")
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const { login, currentUser } = useAuth();
-  const navigate = useNavigate();
+  const { resetPassword } = useAuth();
 
   const setRef = (field) => {
     switch (field.id) {
       case "email-address":
         return emailRef;
-      case "password":
-        return passwordRef;
     }
   };
 
@@ -41,12 +37,13 @@ export default function Login() {
   //Handle Login API Integration here
   const authenticateUser = async () => {
     try {
+        setMessage('')
       setError("");
       setLoading(true);
-      await login(emailRef.current.value, passwordRef.current.value);
-      navigate("/");
+      await resetPassword(emailRef.current.value);
+      setMessage("Check your inbox for further instructions.")
     } catch {
-      setError("Failed to Sign in");
+      setError("Failed to Reset Password");
     }
 
     setLoading(false);
@@ -71,6 +68,9 @@ export default function Login() {
 
   return (
     <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        {error && <div>{error}</div>}
+
+        {message && <div>{message}</div>}
       <div className="-space-y-px">
         {fields.map((field) => {
           const newRef = setRef(field);
@@ -91,9 +91,8 @@ export default function Login() {
           );
         })}
       </div>
-
-      <FormExtra label={true} text="Forgot your password?" link="forgot-password" />
-      <FormAction handleSubmit={handleSubmit} text="Login" />
+      <FormExtra label={false} text="Login" link="login" />
+      <FormAction handleSubmit={handleSubmit} text="Reset Password" />
     </form>
   );
 }
